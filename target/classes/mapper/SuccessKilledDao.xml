@@ -5,8 +5,9 @@
 <mapper namespace="cn.waynechu.seckill.dao.SuccessKilledDao">
     <insert id="insertSuccessKilled">
         <!-- 小技巧：使用ignore，当主键冲突，不报错而是返回 SELECT ROW_COUNT(); 值为0 -->
+        <!-- 秒杀成功，状态为1 -->
         INSERT ignore INTO success_killed(seckill_id,user_phone,state)
-        VALUES (#{seckillId},#{userPhone},0)
+        VALUES (#{seckillId},#{userPhone},1)
     </insert>
 
     <select id="queryByIdWithSeckill" parameterType="long" resultType="SuccessKilled">

@@ -22,7 +22,7 @@ var seckill = {
             return false;
         }
     },
-    //处理秒杀时间
+    //处理服务器秒杀时间
     countDown: function (seckillId, nowTime, startTime, endTime) {
         console.log('从服务器获取到的秒杀时间信息-seckillId:' + seckillId + ',nowTime:' + nowTime + ',startTime:' + startTime + ',endTime:' + endTime);
         //通过jQuery的id选择器获取倒计时控件

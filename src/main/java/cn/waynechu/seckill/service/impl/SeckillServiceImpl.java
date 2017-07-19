@@ -2,6 +2,7 @@ package cn.waynechu.seckill.service.impl;
 
 import cn.waynechu.seckill.dao.SeckillDao;
 import cn.waynechu.seckill.dao.SuccessKilledDao;
+import cn.waynechu.seckill.dao.cache.RedisDao;
 import cn.waynechu.seckill.dto.Exposer;
 import cn.waynechu.seckill.dto.SeckillExecution;
 import cn.waynechu.seckill.entity.Seckill;
@@ -36,6 +37,9 @@ public class SeckillServiceImpl implements SeckillService {
     @Autowired
     private SuccessKilledDao successKilledDao;
 
+    @Autowired
+    private RedisDao redisDao;
+
     //md5盐值字符串，用于混淆MD5
     private final String salt = "ksdfghk#$%5675e()*^%~!$#DjDF";
 
@@ -54,9 +58,19 @@ public class SeckillServiceImpl implements SeckillService {
 
     @Override
     public Exposer exportSeckillUrl(long seckillId) {
-        Seckill seckill = seckillDao.queryById(seckillId);
-        if (seckill == null) {
-            return new Exposer(false, seckillId);
+        // 使用edis进行缓存优化，超时的基础上维护数据一致性
+        // 先尝试从redis获取
+        Seckill seckill = redisDao.getSeckill(seckillId);
+        if(seckill == null){
+            // 从数据库获取
+            seckill = seckillDao.queryById(seckillId);
+            if (seckill == null) {
+                // 数据库也不存在该对象
+                return new Exposer(false, seckillId);
+            }else{
+                // 保存数据到redis
+                redisDao.putSeckill(seckill);
+            }
         }
         Date startTime = seckill.getStartTime();
         Date endTime = seckill.getEndTime();
